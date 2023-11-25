@@ -134,7 +134,7 @@ public class Client {
 
         }
 
-
+        connExchange.close();
     }
     public static void printMenu(){
         System.out.println("You are connected to the exchange as an EXEC Feed:");
@@ -148,7 +148,7 @@ public class Client {
 
     public static void startFeed(String clientID, int port) throws IOException{
 
-        Socket connFeedExchange = new Socket("localhost", 123);
+        Socket connFeedExchange = new Socket("localhost", port);
         BufferedReader input = new BufferedReader(new InputStreamReader(connFeedExchange.getInputStream()));
         PrintWriter output = new PrintWriter(connFeedExchange.getOutputStream(), true);
 
@@ -158,16 +158,19 @@ public class Client {
         System.out.println("Sending ID and feed request to server " + clientID );
         output.println(initExec);
 
-        boolean isRunning = true;
-
-        while(isRunning)
-        {
-            System.out.println("Feed is ready! Waiting for lines from exchange....");
-            String feed = input.readLine();
-            System.out.println("main.java.server.Message from gateway received!");
-            System.out.println(feed);
-        }
-
+        System.out.println("Sending ID and feed request to server " + clientID);
+        new Thread(() -> {
+            while (true) {
+                try {
+                    System.out.println("Feed is ready! Waiting for lines from exchange....");
+                    String feed = input.readLine();
+                    System.out.println("Message from gateway received!");
+                    System.out.println(feed);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
 

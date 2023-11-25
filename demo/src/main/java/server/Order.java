@@ -13,13 +13,17 @@ public class Order {
 	private boolean isRealOrder;
 
 	public Order(String clientID, OrderType type, int quantity, double price, boolean isRealOrder) {
-		this.price = price;
-		this.quantity = quantity;
-		this.clientID = clientID;
-		this.type = type;
-		this.orderID = UUID.randomUUID();
-		this.isValid = true;
-		this.isRealOrder = isRealOrder;
+		if (price < 0 || quantity < 0) {
+			this.isValid = false;
+		} else {
+			this.price = price;
+			this.quantity = quantity;
+			this.clientID = clientID;
+			this.type = type;
+			this.orderID = UUID.randomUUID();
+			this.isValid = true;
+			this.isRealOrder = isRealOrder;
+		}
 	}
 
 	// Constructor for an invalid order
@@ -53,5 +57,18 @@ public class Order {
 
 	public boolean isRealOrder() {
 		return isRealOrder;
+	}
+
+	@Override
+	public String toString() {
+		return "Order{" +
+				"price=" + price +
+				", quantity=" + quantity +
+				", clientID='" + clientID + '\'' +
+				", orderID=" + orderID +
+				", type=" + type +
+				", isValid=" + isValid +
+				", isRealOrder=" + isRealOrder +
+				'}';
 	}
 }

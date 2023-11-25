@@ -7,8 +7,6 @@ import java.net.Socket;
 
 public class ClientGatewayExec implements Runnable {
 
-	// Lớp này sẽ đại diện cho luồng thực thi cục bộ của khách hàng.
-
 	private Socket socket;
 
 	public ClientGatewayExec(Socket socket) {
@@ -17,43 +15,30 @@ public class ClientGatewayExec implements Runnable {
 
 	@Override
 	public void run() {
-		try {
-			// Logic của bạn để xử lý luồng thực thi sẽ được đặt ở đây
-			BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
+		try (BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 			while (true) {
-				// Đọc các tin nhắn từ máy chủ và xử lý chúng
 				String message = input.readLine();
 				if (message == null) {
-					break;  // Thoát khỏi vòng lặp nếu máy chủ ngắt kết nối
+					break;
 				}
-
-				// Xử lý tin nhắn đã nhận
 				processMessage(message);
 			}
 		} catch (IOException e) {
-			// Xử lý IOException
+			// Xử lý IOException, log hoặc in ra console
 			e.printStackTrace();
 		} finally {
-			// Đóng các tài nguyên nếu cần
-			try {
-				socket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			closeSocket();
 		}
 	}
 
 	private void processMessage(String message) {
 		try {
-			// Phân tích và xử lý tin nhắn dựa trên nội dung
 			String[] parts = message.split("\\|");
 
 			if (parts.length >= 2) {
 				String clientID = parts[0];
 				String messageType = parts[1];
 
-				// Xử lý tin nhắn dựa trên loại
 				switch (messageType) {
 					case "NewOrder":
 						handleNewOrder(clientID, parts);
@@ -71,23 +56,42 @@ public class ClientGatewayExec implements Runnable {
 				handleInvalidMessage(message);
 			}
 		} catch (Exception e) {
-			// Xử lý bất kỳ ngoại lệ nào xảy ra trong quá trình xử lý tin nhắn
+			// Xử lý ngoại lệ, log hoặc in ra console
 			e.printStackTrace();
 		}
 	}
 
 	private void handleNewOrder(String clientID, String[] messageParts) {
 		// Xử lý lệnh mới ở đây
-		// messageParts[2] là loại lệnh, messageParts[3] là số lượng, messageParts[4] là giá
-		System.out.println("Received NewOrder from client " + clientID);
-		// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+		try {
+			if (messageParts.length >= 5) {
+				String orderType = messageParts[2];
+				int quantity = Integer.parseInt(messageParts[3]);
+				double price = Double.parseDouble(messageParts[4]);
+
+				System.out.println("Received NewOrder from client " + clientID);
+				// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+			} else {
+				System.out.println("Invalid NewOrder message format: " + String.join("|", messageParts));
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("Invalid number format in NewOrder message: " + e.getMessage());
+		}
 	}
 
 	private void handleCancelOrder(String clientID, String[] messageParts) {
 		// Xử lý lệnh hủy ở đây
-		// messageParts[2] có thể là ID của lệnh cần hủy
-		System.out.println("Received CancelOrder from client " + clientID);
-		// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+		try {
+			if (messageParts.length >= 3) {
+				String orderID = messageParts[2];
+				System.out.println("Received CancelOrder from client " + clientID);
+				// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+			} else {
+				System.out.println("Invalid CancelOrder message format: " + String.join("|", messageParts));
+			}
+		} catch (Exception e) {
+			System.out.println("Error handling CancelOrder message: " + e.getMessage());
+		}
 	}
 
 	private void handleMarketDataRequest(String clientID) {
@@ -106,5 +110,14 @@ public class ClientGatewayExec implements Runnable {
 		// Xử lý khi nhận được một tin nhắn không hợp lệ
 		System.out.println("Invalid message received: " + message);
 		// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+	}
+
+	private void closeSocket() {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// Xử lý IOException khi đóng socket
+			e.printStackTrace();
+		}
 	}
 }

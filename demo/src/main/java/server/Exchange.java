@@ -15,7 +15,9 @@ public class Exchange {
 	private ConcurrentMap<Double, PriorityQueue<Order>> orderbook;
 
 	public static void main(String args[]) throws IOException {
-		int port = Integer.parseInt(args[0]);
+		System.out.println("Server is starting...");
+//		int port = Integer.parseInt(args[0]);
+		int port = 8080;
 		Exchange OurExchange = new Exchange();
 		OurExchange.runServer(port);
 	}
@@ -40,8 +42,8 @@ public class Exchange {
 		}
 	}
 
-	public void addOrder(Order orderToAdd) {
-		System.out.println("main.java.server.Exchange addOrder has been called");
+	public synchronized void addOrder(Order orderToAdd) {
+		System.out.println("Exchange addOrder has been called");
 
 		if (!instantFill(orderToAdd)) {
 			System.out.println("Adding order to book now...");
@@ -110,7 +112,7 @@ public class Exchange {
 		clientFeeds.get(orderTwo.getClientID()).addMessage(fill);
 	}
 
-	public void cancelOrder(String clientID, String orderID) {
+	public synchronized void cancelOrder(String clientID, String orderID) {
 		for (ConcurrentMap.Entry<Double, PriorityQueue<Order>> priceLevel : orderbook.entrySet()) {
 			for (Order individualOrder : priceLevel.getValue()) {
 				System.out.println("Comparing order id " + individualOrder.getOrderID().toString() + " to order id " + orderID);
@@ -122,7 +124,7 @@ public class Exchange {
 		}
 	}
 
-	public void sendMarketData(String clientID) {
+	public synchronized void sendMarketData(String clientID) {
 		System.out.println("Sending Market Data...");
 		StringBuilder book = new StringBuilder();
 
@@ -145,13 +147,13 @@ public class Exchange {
 		}
 	}
 
-	public boolean registerClientFeed(String clientID, Connection connObject) {
+	public synchronized boolean registerClientFeed(String clientID, Connection connObject) {
 		System.out.println("Putting clientID " + clientID + " Into client feeds object");
 		this.clientFeeds.put(clientID, connObject);
 		return false;
 	}
 
-	public boolean removeClientFeed(String clientID) {
+	public synchronized boolean removeClientFeed(String clientID) {
 		this.clientFeeds.remove(clientID);
 		return true;
 	}

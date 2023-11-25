@@ -60,40 +60,37 @@ public class Connection implements Runnable {
 
 	public void runExec() {
 		System.out.println("Starting exec connection now...");
-		while (!isStopped) {
-			try {
-				String input;
-				while ((input = in.readLine()) != null) {
-					String[] messageArray = input.split("\\|", 5);
-					System.out.println("main.java.server.Message received from the client: " + input);
+		try {
+			String input;
+			while ((input = in.readLine()) != null) {
+				String[] messageArray = input.split("\\|", 5);
+				System.out.println("Message received from the client: " + input);
 
-					String messageType = messageArray[1];
+				String messageType = messageArray[1];
 
-					switch (messageType) {
-						case "NewOrder":
-							System.out.println("New main.java.server.Order received!");
-							Order incomingOrder = new Order(messageArray[0], OrderType.valueOf(messageArray[2]),
-									Integer.parseInt(messageArray[3]), Double.parseDouble(messageArray[4]), true);
+				switch (messageType) {
+					case "NewOrder":
+						System.out.println("New Order received!");
+						Order incomingOrder = new Order(messageArray[0], OrderType.valueOf(messageArray[2]),
+								Integer.parseInt(messageArray[3]), Double.parseDouble(messageArray[4]), true);
+						if (incomingOrder.isValid()) {
 							exchange.addOrder(incomingOrder);
-							break;
-
-						case "CancelOrder":
-							System.out.println("Cancellation request received");
-							exchange.cancelOrder(messageArray[0], messageArray[2]);
-							break;
-
-						case "MarketData":
-							System.out.println("Sending Request for market data, client ID: " + messageArray[0]);
-							exchange.sendMarketData(messageArray[0]);
-							break;
-
-						default:
-							break;
-					}
+						}
+						break;
+					case "CancelOrder":
+						System.out.println("Cancellation request received");
+						exchange.cancelOrder(messageArray[0], messageArray[2]);
+						break;
+					case "MarketData":
+						System.out.println("Sending Request for market data, client ID: " + messageArray[0]);
+						exchange.sendMarketData(messageArray[0]);
+						break;
+					default:
+						break;
 				}
-			} catch (IOException e) {
-				System.out.println("Exception thrown while reading from exec feed");
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -117,7 +114,7 @@ public class Connection implements Runnable {
 		}
 	}
 
-	private void processFeedMessage(String feedMessage) {
+	private synchronized void processFeedMessage(String feedMessage) {
 		// Thực hiện logic xử lý cho tin nhắn feed ở đây
 		// Ví dụ, bạn có thể thêm tin nhắn vào feedMessageQueue
 		// hoặc thực hiện bất kỳ hành động khác cần thiết.
@@ -126,7 +123,7 @@ public class Connection implements Runnable {
 		feedMessageQueue.add(feedMessage);
 	}
 
-	public void addMessage(String message) {
+	public synchronized void addMessage(String message) {
 		System.out.println("main.java.server.Connection adding new message to its own queue");
 		this.feedMessageQueue.add(message);
 		out.println(message);
