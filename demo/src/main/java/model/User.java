@@ -5,7 +5,9 @@ public class User {
     private String username;
 
     // Constructors, getters, setters
+    public User() {
 
+    }
 
     public User(int id, String username) {
         this.id = id;
