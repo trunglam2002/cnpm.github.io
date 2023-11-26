@@ -39,6 +39,8 @@ public class Connection implements Runnable {
 
 			System.out.println("Starting connection for client " + clientID + " on connection type " + connType.toString());
 
+			this.exchange.registerClientFeed(clientID, this);
+
 			switch (connType) {
 				case EXEC:
 					runExec();

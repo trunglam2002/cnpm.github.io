@@ -44,6 +44,7 @@ public class Client {
         String connectionType = args[1];
         int port = Integer.parseInt(args[2]);
 
+
         switch(connectionType){
 
             case "FEED":
@@ -69,14 +70,9 @@ public class Client {
         //open socket connection to server.
         Socket connExchange = new Socket("localhost", port);
         BufferedReader input = new BufferedReader(new InputStreamReader(connExchange.getInputStream()));
-        PrintWriter output = new PrintWriter(connExchange.getOutputStream(), true);
-
-
-        // send initial message to server to identify connection type.  array[clientID, Type]
-        String initExec = clientID + "|" +  "EXEC";
-        System.out.println("Sending client Id and exec feed to exchange...");
-
-        output.println(initExec);
+        PrintWriter out = new PrintWriter(connExchange.getOutputStream(), true);
+        String clientInfo = "ClientID|EXEC"; // Thay thế ClientID bằng ID thực của Client
+        out.println(clientInfo);
 
         boolean isRunning = true;
         //Loop asking for user input, sending orders etc.
@@ -104,20 +100,20 @@ public class Client {
                     System.out.println("Making main.java.server.Order, field3: " + orderArray[2]);
 
                     System.out.println("Sending order...");
-                    output.println(clientID + "|" + "NewOrder" + "|" + orderArray[0] + "|" + orderArray[1] + "|" + orderArray[2]);
+                    out.println(clientID + "|" + "NewOrder" + "|" + orderArray[0] + "|" + orderArray[1] + "|" + orderArray[2]);
                     break;
 
                 case 2:
                     //cancel order
                     String cancelID = c.readLine("Enter main.java.server.Order ID to Cancel");
                     System.out.println("Sending Cancellation to exchange...");
-                    output.println(clientID + "|" + "CancelOrder" + "|" + cancelID );
+                    out.println(clientID + "|" + "CancelOrder" + "|" + cancelID );
                     break;
 
                 case 3:
                     //request market data
                     System.out.println("Requesting market data...");
-                    output.println(clientID + "|" + "MarketData");
+                    out.println(clientID + "|" + "MarketData");
 
                     break;
                 case 4:

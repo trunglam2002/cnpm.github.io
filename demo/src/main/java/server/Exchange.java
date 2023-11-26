@@ -16,8 +16,7 @@ public class Exchange {
 
 	public static void main(String args[]) throws IOException {
 		System.out.println("Server is starting...");
-//		int port = Integer.parseInt(args[0]);
-		int port = 8080;
+		int port = Integer.parseInt(args[0]);
 		Exchange OurExchange = new Exchange();
 		OurExchange.runServer(port);
 	}
@@ -28,18 +27,18 @@ public class Exchange {
 	}
 
 	public void runServer(int port) throws IOException {
-		Socket clientSock = null;
-		this.serverSock = new ServerSocket(port);
+		ServerSocket serverSocket = new ServerSocket(port);
+		System.out.println("Server is running on port " + port);
 
 		while (!isStopped) {
-			try {
-				clientSock = this.serverSock.accept();
-			} catch (IOException e) {
-				System.out.println("Error connecting to client");
-			}
+			Socket clientSocket = serverSocket.accept();
+			System.out.println("Accepted connection from " + clientSocket.getInetAddress());
 
-			new Thread(new Connection(clientSock, this)).start();
+			// Tạo một đối tượng Connection để xử lý kết nối mới
+			Connection connection = new Connection(clientSocket, this);
+			new Thread(connection).start();
 		}
+		serverSocket.close();
 	}
 
 	public synchronized void addOrder(Order orderToAdd) {
