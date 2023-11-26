@@ -4,7 +4,6 @@ import model.StockTransaction;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,13 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StockTransactionDAO {
-    private static final String URL = "jdbc:mysql://localhost:3306/your_database";
-    private static final String USER = "your_username";
-    private static final String PASSWORD = "your_password";
-
     public List<StockTransaction> getStockTransactionsByUserId(int userId) {
         List<StockTransaction> stockTransactions = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock_transaction WHERE user_id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, userId);
@@ -43,7 +38,7 @@ public class StockTransactionDAO {
     }
 
     public void addStockTransaction(StockTransaction stockTransaction) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "INSERT INTO stock_transaction (stock_id, user_id, transaction_type, transaction_date, quantity, price) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -61,7 +56,7 @@ public class StockTransactionDAO {
     }
 
     public StockTransaction getStockTransactionById(int stockTransactionId) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock_transaction WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockTransactionId);
@@ -87,7 +82,7 @@ public class StockTransactionDAO {
 
     public List<StockTransaction> getAllStockTransactions() {
         List<StockTransaction> stockTransactions = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock_transaction";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -111,7 +106,7 @@ public class StockTransactionDAO {
     }
 
     public void updateStockTransaction(StockTransaction stockTransaction) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "UPDATE stock_transaction SET stock_id = ?, user_id = ?, transaction_type = ?, " +
                     "transaction_date = ?, quantity = ?, price = ? WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -131,7 +126,7 @@ public class StockTransactionDAO {
 
     public List<StockTransaction> getStockTransactionsByUser(int userId) {
         List<StockTransaction> stockTransactions = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock_transaction WHERE user_id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, userId);
@@ -157,7 +152,7 @@ public class StockTransactionDAO {
 
     public List<StockTransaction> getStockTransactionsByStock(int stockId) {
         List<StockTransaction> stockTransactions = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock_transaction WHERE stock_id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockId);
@@ -183,7 +178,7 @@ public class StockTransactionDAO {
 
     public List<StockTransaction> getStockTransactionsByType(String transactionType) {
         List<StockTransaction> stockTransactions = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock_transaction WHERE transaction_type = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, transactionType);
@@ -208,7 +203,7 @@ public class StockTransactionDAO {
     }
 
     public void deleteStockTransaction(int stockTransactionId) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "DELETE FROM stock_transaction WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockTransactionId);

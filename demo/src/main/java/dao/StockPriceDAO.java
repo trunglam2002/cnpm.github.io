@@ -4,7 +4,6 @@ import model.StockPrice;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,13 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StockPriceDAO {
-    private static final String URL = "jdbc:mysql://localhost:3306/your_database";
-    private static final String USER = "your_username";
-    private static final String PASSWORD = "your_password";
-
     public List<StockPrice> getStockPricesByStockId(int stockId) {
         List<StockPrice> stockPrices = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock_price WHERE stock_id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockId);
@@ -45,7 +40,7 @@ public class StockPriceDAO {
     }
 
     public void addStockPrice(StockPrice stockPrice) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "INSERT INTO stock_price (stock_id, date, open, high, low, close, adjusted_close, volume) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -65,7 +60,7 @@ public class StockPriceDAO {
     }
 
     public void updateStockPrice(StockPrice stockPrice) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "UPDATE stock_price SET date = ?, open = ?, high = ?, low = ?, close = ?, " +
                     "adjusted_close = ?, volume = ? WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -85,7 +80,7 @@ public class StockPriceDAO {
     }
 
     public void deleteStockPrice(int stockPriceId) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "DELETE FROM stock_price WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockPriceId);

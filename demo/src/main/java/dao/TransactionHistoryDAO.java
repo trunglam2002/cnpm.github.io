@@ -3,7 +3,6 @@ package dao;
 import model.TransactionHistory;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,13 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionHistoryDAO {
-    private static final String URL = "jdbc:mysql://localhost:3306/your_database";
-    private static final String USER = "your_username";
-    private static final String PASSWORD = "your_password";
-
     public List<TransactionHistory> getTransactionHistoryByUserId(int userId) {
         List<TransactionHistory> transactionHistoryList = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM transaction_history WHERE user_id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, userId);
@@ -39,7 +34,7 @@ public class TransactionHistoryDAO {
     }
 
     public TransactionHistory getTransactionHistoryById(int transactionHistoryId) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM transaction_history WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, transactionHistoryId);
@@ -62,7 +57,7 @@ public class TransactionHistoryDAO {
 
     public List<TransactionHistory> getAllTransactionHistory() {
         List<TransactionHistory> transactionHistoryList = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM transaction_history";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -84,7 +79,7 @@ public class TransactionHistoryDAO {
 
     public List<TransactionHistory> getTransactionHistoryByUser(int userId) {
         List<TransactionHistory> transactionHistories = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM transaction_history WHERE user_id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, userId);
@@ -107,7 +102,7 @@ public class TransactionHistoryDAO {
 
     public List<TransactionHistory> getTransactionHistoryByStock(int stockId) {
         List<TransactionHistory> transactionHistories = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM transaction_history WHERE stock_id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockId);
@@ -129,7 +124,7 @@ public class TransactionHistoryDAO {
     }
 
     public void deleteTransactionHistory(int transactionHistoryId) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "DELETE FROM transaction_history WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, transactionHistoryId);
@@ -143,7 +138,7 @@ public class TransactionHistoryDAO {
     // Add other methods for CRUD operations
 
     public void insertTransactionHistory(TransactionHistory transactionHistory) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "INSERT INTO transaction_history (user_id, stock_id, stock_transaction_id) VALUES (?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setInt(1, transactionHistory.getUserId());
