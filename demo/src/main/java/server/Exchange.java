@@ -1,3 +1,4 @@
+// Lớp Exchange
 package server;
 
 import java.io.IOException;
@@ -15,7 +16,6 @@ public class Exchange {
 	private ConcurrentMap<Double, PriorityQueue<Order>> orderbook;
 
 	public static void main(String args[]) throws IOException {
-		System.out.println("Server is starting...");
 		int port = Integer.parseInt(args[0]);
 		Exchange OurExchange = new Exchange();
 		OurExchange.runServer(port);
@@ -27,133 +27,89 @@ public class Exchange {
 	}
 
 	public void runServer(int port) throws IOException {
-		ServerSocket serverSocket = new ServerSocket(port);
-		System.out.println("Server is running on port " + port);
+		Socket clientSock = null;
+		this.serverSock = new ServerSocket(port);
 
 		while (!isStopped) {
-			Socket clientSocket = serverSocket.accept();
-			System.out.println("Accepted connection from " + clientSocket.getInetAddress());
-
-			// Tạo một đối tượng Connection để xử lý kết nối mới
-			Connection connection = new Connection(clientSocket, this);
-			new Thread(connection).start();
-		}
-		serverSocket.close();
-	}
-
-	public synchronized void addOrder(Order orderToAdd) {
-		System.out.println("Exchange addOrder has been called");
-
-		if (!instantFill(orderToAdd)) {
-			System.out.println("Adding order to book now...");
-
-			if (orderbook.containsKey(orderToAdd.getPrice())) {
-				System.out.println("main.java.server.Order book contains orders at that level, adding our new order..");
-				orderbook.get(orderToAdd.getPrice()).add(orderToAdd);
-
-				clientFeeds.get(orderToAdd.getClientID()).feedMessageQueue.add("main.java.server.Order added with ID: " + orderToAdd.getOrderID().toString());
-
-			} else {
-				System.out.println("main.java.server.Order book has no orders at that price level, creating price level now...");
-				PriorityQueue<Order> newprice = new PriorityQueue<>();
-				newprice.add(orderToAdd);
-				orderbook.putIfAbsent(orderToAdd.getPrice(), newprice);
-				System.out.println("main.java.server.Order has been added!");
-				clientFeeds.get(orderToAdd.getClientID()).addMessage("main.java.server.Order has been added to the book, ID: " + orderToAdd.getOrderID().toString());
-			}
-		}
-	}
-
-	public boolean instantFill(Order orderToFill) {
-		if (orderToFill.getType() == OrderType.BUY) {
 			try {
-				for (ConcurrentMap.Entry<Double, PriorityQueue<Order>> priceLevel : orderbook.entrySet()) {
-					for (Order individualOrder : priceLevel.getValue()) {
-						if (orderToFill.getPrice() <= individualOrder.getPrice() && individualOrder.getType() == OrderType.SELL) {
-							priceLevel.getValue().remove(individualOrder);
-							match(orderToFill, individualOrder);
-							return true;
-						}
-					}
-				}
-			} catch (Exception e) {
-				System.out.println("Exception in instant fill " + e.toString());
-			}
-		} else if (orderToFill.getType() == OrderType.SELL) {
-			Order currentBestFill = new Order();
-			for (ConcurrentMap.Entry<Double, PriorityQueue<Order>> priceLevel : orderbook.entrySet()) {
-				Order individualOrder = priceLevel.getValue().peek();
-
-				if (individualOrder == null)
-					return false;
-				if (orderToFill.getPrice() <= individualOrder.getPrice() && individualOrder.getType() == OrderType.BUY) {
-					currentBestFill = individualOrder;
-					break;
-				}
+				clientSock = this.serverSock.accept();
+			} catch (IOException e) {
+				System.out.println("Error connecting to client");
 			}
 
-			if (currentBestFill.isRealOrder()) {
-				System.out.println("Current Best Fill found in instant fill...");
-				orderbook.get(currentBestFill.getPrice()).remove(currentBestFill);
-				match(orderToFill, currentBestFill);
-				return true;
-			}
-		}
-		System.out.println("No Instant Fill Made, returning false...");
-		return false;
-	}
-
-	public void match(Order orderOne, Order orderTwo) {
-		System.out.println("Match made!");
-		String fill = "Fill Notification!  Buy Side: " + orderOne.getClientID() + " Sell Side: " + orderTwo.getClientID() +
-				" Price: " + String.valueOf(orderTwo.getPrice()) + " Quantity: " + String.valueOf(orderTwo.getQuantity());
-		clientFeeds.get(orderOne.getClientID()).addMessage(fill);
-		clientFeeds.get(orderTwo.getClientID()).addMessage(fill);
-	}
-
-	public synchronized void cancelOrder(String clientID, String orderID) {
-		for (ConcurrentMap.Entry<Double, PriorityQueue<Order>> priceLevel : orderbook.entrySet()) {
-			for (Order individualOrder : priceLevel.getValue()) {
-				System.out.println("Comparing order id " + individualOrder.getOrderID().toString() + " to order id " + orderID);
-				if (individualOrder.getOrderID().toString().equals(orderID)) {
-					System.out.println("Removing order # " + orderID);
-					priceLevel.getValue().remove(individualOrder);
-				}
-			}
+			new Thread(new Connection(clientSock, this)).start();
 		}
 	}
 
-	public synchronized void sendMarketData(String clientID) {
+	public void addOrder(Order orderToAdd) {
+		System.out.println("Adding order to the order book...");
+		double price = orderToAdd.getPrice();
+		orderbook.putIfAbsent(price, new PriorityQueue<>());
+		orderbook.get(price).add(orderToAdd);
+		printOrderBook();
+	}
+
+	public void cancelOrder(String clientID, String orderID) {
+		System.out.println("Cancelling order for client " + clientID + " with ID " + orderID);
+
+		for (PriorityQueue<Order> orderQueue : orderbook.values()) {
+			// Iterate through all order queues in the orderbook
+			for (Order order : orderQueue) {
+				if (order.getClientID().equals(clientID) && order.getOrderID().toString().equals(orderID)) {
+					// Found the order to cancel
+					orderQueue.remove(order); // Remove the order from the queue
+					System.out.println("Order cancelled: " + order);
+					printOrderBook();
+					return;
+				}
+			}
+		}
+
+		// If it reaches here, it means the order to cancel was not found
+		System.out.println("Order not found for cancellation: Client " + clientID + ", Order ID " + orderID);
+	}
+
+	public void sendMarketData(String clientID) {
 		System.out.println("Sending Market Data...");
 		StringBuilder book = new StringBuilder();
 
 		for (ConcurrentMap.Entry<Double, PriorityQueue<Order>> priceLevel : orderbook.entrySet()) {
-			Order order = priceLevel.getValue().peek();
-			if (order != null) {
-				book.append("Price: " + String.valueOf(order.getPrice()) + "    Quantity: " + String.valueOf(order.getQuantity()) +
-						" 	Type: " + order.getType().toString());
-				book.append(System.getProperty("line.separator"));
+			for (Order order : priceLevel.getValue()) {
+				book.append(order.toString()).append("|");
 			}
 		}
-		System.out.println("Market Data assembled! " + book.toString());
 
-		if (this.clientFeeds.containsKey(clientID)) {
-			System.out.println("main.java.server.Client Feeds contains the key!");
-			Connection ethan = this.clientFeeds.get(clientID);
-			ethan.addMessage(book.toString());
-		} else {
-			System.out.println("Could not find a FEEd connection to send market data to...");
+		clientFeeds.get(clientID).sendMessage(book.toString());
+	}
+
+	public void addClientFeed(String clientID, Connection connection) {
+		System.out.println("Adding client feed for " + clientID);
+		clientFeeds.put(clientID, connection);
+	}
+
+	public void stopServer() {
+		System.out.println("Stopping the server...");
+		this.isStopped = true;
+		try {
+			this.serverSock.close();
+		} catch (IOException e) {
+			System.out.println("Error closing server socket");
 		}
 	}
 
-	public synchronized boolean registerClientFeed(String clientID, Connection connObject) {
-		System.out.println("Putting clientID " + clientID + " Into client feeds object");
-		this.clientFeeds.put(clientID, connObject);
-		return false;
+	public boolean isStopped() {
+		return this.isStopped;
 	}
 
-	public synchronized boolean removeClientFeed(String clientID) {
-		this.clientFeeds.remove(clientID);
-		return true;
+	public void printOrderBook() {
+		System.out.println("Order Book:");
+		for (ConcurrentMap.Entry<Double, PriorityQueue<Order>> priceLevel : orderbook.entrySet()) {
+			System.out.print(priceLevel.getKey() + ": ");
+			for (Order order : priceLevel.getValue()) {
+				System.out.print(order + " ");
+			}
+			System.out.println();
+		}
+		System.out.println();
 	}
 }

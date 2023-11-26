@@ -31,6 +31,8 @@ public class Order {
 		this.isValid = false;
 	}
 
+	// Getters and setters
+
 	public double getPrice() {
 		return price;
 	}

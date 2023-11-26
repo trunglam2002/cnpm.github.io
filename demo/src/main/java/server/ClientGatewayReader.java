@@ -16,24 +16,20 @@ public class ClientGatewayReader implements Runnable {
 	@Override
 	public void run() {
 		try {
-			// Logic để xử lý luồng đọc của khách hàng sẽ được đặt ở đây
 			BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 			while (true) {
-				// Đọc tin nhắn từ máy chủ và in chúng ra
 				String message = input.readLine();
 				if (message == null) {
-					break;  // Thoát khỏi vòng lặp nếu máy chủ ngắt kết nối
+					break;
 				}
 
-				// In tin nhắn ra màn hình
-				System.out.println("Nhận được tin nhắn từ gateway: " + message);
+				System.out.println("Received message from gateway: " + message);
+				// Add your logic to process the received message here
 			}
 		} catch (IOException e) {
-			// Xử lý IOException
 			e.printStackTrace();
 		} finally {
-			// Đóng tài nguyên nếu cần
 			try {
 				socket.close();
 			} catch (IOException e) {

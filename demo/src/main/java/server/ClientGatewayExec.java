@@ -24,7 +24,6 @@ public class ClientGatewayExec implements Runnable {
 				processMessage(message);
 			}
 		} catch (IOException e) {
-			// Xử lý IOException, log hoặc in ra console
 			e.printStackTrace();
 		} finally {
 			closeSocket();
@@ -56,13 +55,11 @@ public class ClientGatewayExec implements Runnable {
 				handleInvalidMessage(message);
 			}
 		} catch (Exception e) {
-			// Xử lý ngoại lệ, log hoặc in ra console
 			e.printStackTrace();
 		}
 	}
 
 	private void handleNewOrder(String clientID, String[] messageParts) {
-		// Xử lý lệnh mới ở đây
 		try {
 			if (messageParts.length >= 5) {
 				String orderType = messageParts[2];
@@ -70,7 +67,7 @@ public class ClientGatewayExec implements Runnable {
 				double price = Double.parseDouble(messageParts[4]);
 
 				System.out.println("Received NewOrder from client " + clientID);
-				// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+				// Add your logic to handle a new order
 			} else {
 				System.out.println("Invalid NewOrder message format: " + String.join("|", messageParts));
 			}
@@ -80,12 +77,11 @@ public class ClientGatewayExec implements Runnable {
 	}
 
 	private void handleCancelOrder(String clientID, String[] messageParts) {
-		// Xử lý lệnh hủy ở đây
 		try {
 			if (messageParts.length >= 3) {
 				String orderID = messageParts[2];
 				System.out.println("Received CancelOrder from client " + clientID);
-				// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+				// Add your logic to handle a cancel order
 			} else {
 				System.out.println("Invalid CancelOrder message format: " + String.join("|", messageParts));
 			}
@@ -95,28 +91,24 @@ public class ClientGatewayExec implements Runnable {
 	}
 
 	private void handleMarketDataRequest(String clientID) {
-		// Xử lý yêu cầu dữ liệu thị trường ở đây
 		System.out.println("Received MarketData request from client " + clientID);
-		// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+		// Add your logic to handle a market data request
 	}
 
 	private void handleUnknownMessageType(String clientID, String messageType, String[] messageParts) {
-		// Xử lý khi gặp một loại tin nhắn không xác định
 		System.out.println("Unknown message type from client " + clientID + ": " + messageType);
-		// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+		// Add your logic to handle an unknown message type
 	}
 
 	private void handleInvalidMessage(String message) {
-		// Xử lý khi nhận được một tin nhắn không hợp lệ
 		System.out.println("Invalid message received: " + message);
-		// Thực hiện xử lý tùy thuộc vào yêu cầu của bạn
+		// Add your logic to handle an invalid message
 	}
 
 	private void closeSocket() {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			// Xử lý IOException khi đóng socket
 			e.printStackTrace();
 		}
 	}

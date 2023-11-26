@@ -1,3 +1,4 @@
+// Lớp Connection
 package server;
 
 import java.io.BufferedReader;
@@ -13,9 +14,6 @@ public class Connection implements Runnable {
 	private String clientID;
 	private ClientConnectionType connType;
 
-	public PriorityQueue<String> feedMessageQueue;
-	private boolean isStopped = false;
-
 	private PrintWriter out;
 	private BufferedReader in;
 	private Exchange exchange;
@@ -23,7 +21,6 @@ public class Connection implements Runnable {
 	public Connection(Socket clientSocket, Exchange excObj) {
 		this.conn = clientSocket;
 		this.exchange = excObj;
-		feedMessageQueue = new PriorityQueue<>();
 	}
 
 	public void run() {
@@ -38,8 +35,6 @@ public class Connection implements Runnable {
 			this.connType = ClientConnectionType.valueOf(clientInfo[1].trim());
 
 			System.out.println("Starting connection for client " + clientID + " on connection type " + connType.toString());
-
-			this.exchange.registerClientFeed(clientID, this);
 
 			switch (connType) {
 				case EXEC:
@@ -62,72 +57,70 @@ public class Connection implements Runnable {
 
 	public void runExec() {
 		System.out.println("Starting exec connection now...");
-		try {
-			String input;
-			while ((input = in.readLine()) != null) {
-				String[] messageArray = input.split("\\|", 5);
-				System.out.println("Message received from the client: " + input);
+		while (!exchange.isStopped()) {
+			try {
+				String input;
+				while ((input = in.readLine()) != null) {
+					String[] messageArray = input.split("\\|", 5);
+					System.out.println("Message received from the client: " + input);
 
-				String messageType = messageArray[1];
+					String messageType = messageArray[1];
 
-				switch (messageType) {
-					case "NewOrder":
-						System.out.println("New Order received!");
-						Order incomingOrder = new Order(messageArray[0], OrderType.valueOf(messageArray[2]),
-								Integer.parseInt(messageArray[3]), Double.parseDouble(messageArray[4]), true);
-						if (incomingOrder.isValid()) {
+					switch (messageType) {
+						case "NewOrder":
+							System.out.println("New Order received!");
+							Order incomingOrder = new Order(messageArray[0], OrderType.valueOf(messageArray[2]),
+									Integer.parseInt(messageArray[3]), Double.parseDouble(messageArray[4]), true);
 							exchange.addOrder(incomingOrder);
-						}
-						break;
-					case "CancelOrder":
-						System.out.println("Cancellation request received");
-						exchange.cancelOrder(messageArray[0], messageArray[2]);
-						break;
-					case "MarketData":
-						System.out.println("Sending Request for market data, client ID: " + messageArray[0]);
-						exchange.sendMarketData(messageArray[0]);
-						break;
-					default:
-						break;
+							break;
+
+						case "CancelOrder":
+							System.out.println("Cancellation request received");
+							exchange.cancelOrder(messageArray[0], messageArray[2]);
+							break;
+
+						case "MarketData":
+							System.out.println("Sending Request for market data, client ID: " + messageArray[0]);
+							exchange.sendMarketData(messageArray[0]);
+							break;
+
+						default:
+							break;
+					}
 				}
+			} catch (IOException e) {
+				System.out.println("Exception thrown while reading from exec feed");
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
 	public void runFeed() {
 		try {
-			System.out.println("Đăng ký khách hàng với sàn giao dịch..." + this.toString());
-			exchange.registerClientFeed(clientID, this);
+			System.out.println("Registering client with the exchange..." + this.toString());
+			exchange.addClientFeed(clientID, this);
 
-			while (!isStopped) {
+			while (!exchange.isStopped()) {
 				String input = in.readLine();
 
 				if (input != null) {
-					System.out.println("Nhận được tin nhắn từ máy chủ: " + input);
+					System.out.println("Received message from the server: " + input);
 
-					// Xử lý tin nhắn feed đến ở đây
+					// Process feed message here
 					processFeedMessage(input);
 				}
 			}
 		} catch (IOException e) {
-			System.out.println("Ngoại lệ xảy ra khi đọc từ feed");
+			System.out.println("Exception occurred while reading from feed");
 		}
 	}
 
-	private synchronized void processFeedMessage(String feedMessage) {
-		// Thực hiện logic xử lý cho tin nhắn feed ở đây
-		// Ví dụ, bạn có thể thêm tin nhắn vào feedMessageQueue
-		// hoặc thực hiện bất kỳ hành động khác cần thiết.
-
-		System.out.println("Đang xử lý tin nhắn feed: " + feedMessage);
-		feedMessageQueue.add(feedMessage);
+	private void processFeedMessage(String feedMessage) {
+		// Implement logic to process feed messages here
+		// Example: You can add the feed message to a queue for further processing
+		System.out.println("Processing feed message: " + feedMessage);
 	}
 
-	public synchronized void addMessage(String message) {
-		System.out.println("main.java.server.Connection adding new message to its own queue");
-		this.feedMessageQueue.add(message);
+	public void sendMessage(String message) {
 		out.println(message);
 	}
 }

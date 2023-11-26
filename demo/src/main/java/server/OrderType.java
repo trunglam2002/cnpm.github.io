@@ -1,6 +1,5 @@
 package server;
 
 public enum OrderType {
-	BUY,SELL
-			
+	BUY, SELL
 }
