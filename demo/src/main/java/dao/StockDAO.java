@@ -6,8 +6,32 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StockDAO {
+
+    public List<Stock> getAllStocks() {
+        List<Stock> stocks = new ArrayList<>();
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT * FROM stock";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Stock stock = new Stock();
+                        stock.setId(resultSet.getInt("id"));
+                        stock.setSymbol(resultSet.getString("symbol"));
+                        stock.setCompany(resultSet.getString("company"));
+                        stocks.add(stock);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return stocks;
+    }
+
     public Stock getStockById(int stockId) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM stock WHERE id = ?";
