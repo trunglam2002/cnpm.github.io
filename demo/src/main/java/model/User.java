@@ -1,10 +1,14 @@
 package model;
 
+import java.math.BigDecimal;
+
 public class User {
     private int id;
     private String username;
 
     private String password;
+
+    private BigDecimal balance; // Thêm trường balance
 
     // Constructors, getters, setters
     public User() {
@@ -17,6 +21,10 @@ public class User {
         this.password = password;
     }
 
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
     public int getId() {
         return id;
     }
@@ -27,6 +35,10 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
     }
 
     public void setId(int id) {

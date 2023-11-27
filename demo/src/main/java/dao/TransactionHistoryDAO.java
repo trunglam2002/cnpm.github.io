@@ -10,50 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionHistoryDAO {
-    public List<TransactionHistory> getTransactionHistoryByUserId(int userId) {
-        List<TransactionHistory> transactionHistoryList = new ArrayList<>();
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "SELECT * FROM transaction_history WHERE user_id = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, userId);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        TransactionHistory transactionHistory = new TransactionHistory();
-                        transactionHistory.setId(resultSet.getInt("id"));
-                        transactionHistory.setUserId(resultSet.getInt("user_id"));
-                        transactionHistory.setStockId(resultSet.getInt("stock_id"));
-                        transactionHistory.setStockTransactionId(resultSet.getInt("stock_transaction_id"));
-                        transactionHistoryList.add(transactionHistory);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return transactionHistoryList;
-    }
-
-    public TransactionHistory getTransactionHistoryById(int transactionHistoryId) {
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "SELECT * FROM transaction_history WHERE id = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, transactionHistoryId);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        TransactionHistory transactionHistory = new TransactionHistory();
-                        transactionHistory.setId(resultSet.getInt("id"));
-                        transactionHistory.setUserId(resultSet.getInt("user_id"));
-                        transactionHistory.setStockId(resultSet.getInt("stock_id"));
-                        transactionHistory.setStockTransactionId(resultSet.getInt("stock_transaction_id"));
-                        return transactionHistory;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public List<TransactionHistory> getAllTransactionHistory() {
         List<TransactionHistory> transactionHistoryList = new ArrayList<>();

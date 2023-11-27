@@ -2,31 +2,13 @@ package dao;
 
 import model.User;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserDAO {
-    public User getUserById(int userId) {
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "SELECT * FROM user WHERE id = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, userId);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        User user = new User();
-                        user.setId(resultSet.getInt("id"));
-                        user.setUsername(resultSet.getString("username"));
-                        return user;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public void addUser(User user) {
         try (Connection connection = DatabaseManager.getConnection()) {
@@ -109,9 +91,17 @@ public class UserDAO {
                         user.setId(resultSet.getInt("id"));
                         user.setUsername(resultSet.getString("username"));
 
-                        // Mật khẩu được lấy từ cơ sở dữ liệu và được mã hóa trước khi gán
-                        String hashedPassword = resultSet.getString("password");
-                        user.setPassword(hashedPassword);
+                        // Kiểm tra xem cột "password" có tồn tại hay không
+                        if (resultSet.getString("password") != null) {
+                            // Mật khẩu được lấy từ cơ sở dữ liệu và được mã hóa trước khi gán
+                            String hashedPassword = resultSet.getString("password");
+                            user.setPassword(hashedPassword);
+                        } else {
+                            // Xử lý nếu cột "password" không tồn tại
+                            // Có thể thông báo hoặc xử lý theo cách khác tùy vào yêu cầu
+                            System.out.println("Column 'password' does not exist for user " + username);
+                            return null;
+                        }
 
                         return user;
                     }
@@ -124,4 +114,67 @@ public class UserDAO {
         return null;
     }
 
+    public void updateUserBalance(int userId, BigDecimal newBalance) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "UPDATE user SET balance = ? WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setBigDecimal(1, newBalance);
+                preparedStatement.setInt(2, userId);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public BigDecimal getUserBalance(int userId) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT balance FROM user WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, userId);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getBigDecimal("balance");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO; // Trả về giá trị mặc định nếu không tìm thấy số dư
+    }
+
+    public User getUserById(int userId) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT * FROM user WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, userId);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        User user = new User();
+                        user.setId(resultSet.getInt("id"));
+                        user.setUsername(resultSet.getString("username"));
+
+                        // Kiểm tra xem cột "password" có tồn tại hay không
+                        if (resultSet.getString("password") != null) {
+                            // Mật khẩu được lấy từ cơ sở dữ liệu và được mã hóa trước khi gán
+                            String hashedPassword = resultSet.getString("password");
+                            user.setPassword(hashedPassword);
+                        } else {
+                            // Xử lý nếu cột "password" không tồn tại
+                            // Có thể thông báo hoặc xử lý theo cách khác tùy vào yêu cầu
+                            System.out.println("Column 'password' does not exist for user with ID " + userId);
+                            return null;
+                        }
+
+                        return user;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            // Xử lý lỗi SQL, có thể thông báo hoặc ghi log
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

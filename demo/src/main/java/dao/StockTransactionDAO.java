@@ -11,31 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StockTransactionDAO {
-    public List<StockTransaction> getStockTransactionsByUserId(int userId) {
-        List<StockTransaction> stockTransactions = new ArrayList<>();
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "SELECT * FROM stock_transaction WHERE user_id = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, userId);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        StockTransaction stockTransaction = new StockTransaction();
-                        stockTransaction.setId(resultSet.getInt("id"));
-                        stockTransaction.setStockId(resultSet.getInt("stock_id"));
-                        stockTransaction.setUserId(resultSet.getInt("user_id"));
-                        stockTransaction.setTransactionType(resultSet.getString("transaction_type"));
-                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
-                        stockTransaction.setQuantity(resultSet.getInt("quantity"));
-                        stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
-                        stockTransactions.add(stockTransaction);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return stockTransactions;
-    }
 
     public void addStockTransaction(StockTransaction stockTransaction) {
         try (Connection connection = DatabaseManager.getConnection()) {
@@ -44,7 +19,7 @@ public class StockTransactionDAO {
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockTransaction.getStockId());
                 preparedStatement.setInt(2, stockTransaction.getUserId());
-                preparedStatement.setString(3, stockTransaction.getTransactionType());
+                preparedStatement.setString(3, String.valueOf(stockTransaction.getTransactionType()));
                 preparedStatement.setDate(4, stockTransaction.getTransactionDate());
                 preparedStatement.setInt(5, stockTransaction.getQuantity());
                 preparedStatement.setBigDecimal(6, stockTransaction.getPrice());
@@ -53,31 +28,6 @@ public class StockTransactionDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public StockTransaction getStockTransactionById(int stockTransactionId) {
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "SELECT * FROM stock_transaction WHERE id = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, stockTransactionId);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        StockTransaction stockTransaction = new StockTransaction();
-                        stockTransaction.setId(resultSet.getInt("id"));
-                        stockTransaction.setStockId(resultSet.getInt("stock_id"));
-                        stockTransaction.setUserId(resultSet.getInt("user_id"));
-                        stockTransaction.setTransactionType(resultSet.getString("transaction_type"));
-                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
-                        stockTransaction.setQuantity(resultSet.getInt("quantity"));
-                        stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
-                        return stockTransaction;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public List<StockTransaction> getAllStockTransactions() {
@@ -91,7 +41,7 @@ public class StockTransactionDAO {
                         stockTransaction.setId(resultSet.getInt("id"));
                         stockTransaction.setStockId(resultSet.getInt("stock_id"));
                         stockTransaction.setUserId(resultSet.getInt("user_id"));
-                        stockTransaction.setTransactionType(resultSet.getString("transaction_type"));
+                        stockTransaction.setTransactionType(StockTransaction.TransactionType.valueOf(resultSet.getString("transaction_type")));
                         stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
                         stockTransaction.setQuantity(resultSet.getInt("quantity"));
                         stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
@@ -112,7 +62,7 @@ public class StockTransactionDAO {
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, stockTransaction.getStockId());
                 preparedStatement.setInt(2, stockTransaction.getUserId());
-                preparedStatement.setString(3, stockTransaction.getTransactionType());
+                preparedStatement.setString(3, String.valueOf(stockTransaction.getTransactionType()));
                 preparedStatement.setDate(4, stockTransaction.getTransactionDate());
                 preparedStatement.setInt(5, stockTransaction.getQuantity());
                 preparedStatement.setBigDecimal(6, stockTransaction.getPrice());
@@ -136,7 +86,7 @@ public class StockTransactionDAO {
                         stockTransaction.setId(resultSet.getInt("id"));
                         stockTransaction.setStockId(resultSet.getInt("stock_id"));
                         stockTransaction.setUserId(resultSet.getInt("user_id"));
-                        stockTransaction.setTransactionType(resultSet.getString("transaction_type"));
+                        stockTransaction.setTransactionType(StockTransaction.TransactionType.valueOf(resultSet.getString("transaction_type")));
                         stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
                         stockTransaction.setQuantity(resultSet.getInt("quantity"));
                         stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
@@ -162,33 +112,7 @@ public class StockTransactionDAO {
                         stockTransaction.setId(resultSet.getInt("id"));
                         stockTransaction.setStockId(resultSet.getInt("stock_id"));
                         stockTransaction.setUserId(resultSet.getInt("user_id"));
-                        stockTransaction.setTransactionType(resultSet.getString("transaction_type"));
-                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
-                        stockTransaction.setQuantity(resultSet.getInt("quantity"));
-                        stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
-                        stockTransactions.add(stockTransaction);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return stockTransactions;
-    }
-
-    public List<StockTransaction> getStockTransactionsByType(String transactionType) {
-        List<StockTransaction> stockTransactions = new ArrayList<>();
-        try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "SELECT * FROM stock_transaction WHERE transaction_type = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, transactionType);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        StockTransaction stockTransaction = new StockTransaction();
-                        stockTransaction.setId(resultSet.getInt("id"));
-                        stockTransaction.setStockId(resultSet.getInt("stock_id"));
-                        stockTransaction.setUserId(resultSet.getInt("user_id"));
-                        stockTransaction.setTransactionType(resultSet.getString("transaction_type"));
+                        stockTransaction.setTransactionType(StockTransaction.TransactionType.valueOf(resultSet.getString("transaction_type")));
                         stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
                         stockTransaction.setQuantity(resultSet.getInt("quantity"));
                         stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
