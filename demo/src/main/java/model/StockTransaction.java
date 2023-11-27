@@ -1,14 +1,14 @@
 package model;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 
 public class StockTransaction {
     private int id;
     private int stockId;
     private int userId;
     private TransactionType transactionType;
-    private Date transactionDate;
+    private LocalDate transactionDate;
     private int quantity;
     private BigDecimal price;
 
@@ -19,8 +19,10 @@ public class StockTransaction {
         LIMIT_SELL
     }
 
-    // Các getter và setter
+    public StockTransaction() {
+    }
 
+    // Encapsulation
     public int getId() {
         return id;
     }
@@ -53,27 +55,55 @@ public class StockTransaction {
         this.transactionType = transactionType;
     }
 
-    public Date getTransactionDate() {
+    // Use LocalDate instead of Date
+    public LocalDate getTransactionDate() {
         return transactionDate;
     }
 
-    public void setTransactionDate(Date transactionDate) {
+    public void setTransactionDate(LocalDate transactionDate) {
         this.transactionDate = transactionDate;
     }
 
+    // Encapsulation
     public int getQuantity() {
         return quantity;
     }
 
+    // Validation in setter
     public void setQuantity(int quantity) {
-        this.quantity = quantity;
+        if (quantity >= 0) {
+            this.quantity = quantity;
+        } else {
+            throw new IllegalArgumentException("Quantity must be non-negative");
+        }
     }
 
+    // Encapsulation
     public BigDecimal getPrice() {
         return price;
     }
 
+    // Validation in setter
     public void setPrice(BigDecimal price) {
-        this.price = price;
+        if (price != null && price.compareTo(BigDecimal.ZERO) >= 0) {
+            this.price = price;
+        } else {
+            throw new IllegalArgumentException("Price must be non-negative");
+        }
+    }
+
+    // Other getters and setters...
+
+    @Override
+    public String toString() {
+        return "StockTransaction{" +
+                "id=" + id +
+                ", stockId=" + stockId +
+                ", userId=" + userId +
+                ", transactionType=" + transactionType +
+                ", transactionDate=" + transactionDate +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                '}';
     }
 }

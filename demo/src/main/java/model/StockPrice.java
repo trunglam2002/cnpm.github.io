@@ -1,12 +1,12 @@
 package model;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 
 public class StockPrice {
     private int id;
     private int stockId;
-    private Date date;
+    private LocalDate date;
     private BigDecimal open;
     private BigDecimal high;
     private BigDecimal low;
@@ -14,12 +14,10 @@ public class StockPrice {
     private BigDecimal adjustedClose;
     private int volume;
 
-    // Constructors, getters, setters
     public StockPrice() {
-
     }
 
-    public StockPrice(int id, int stockId, Date date, BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal close, BigDecimal adjustedClose, int volume) {
+    public StockPrice(int id, int stockId, LocalDate date, BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal close, BigDecimal adjustedClose, int volume) {
         this.id = id;
         this.stockId = stockId;
         this.date = date;
@@ -31,77 +29,42 @@ public class StockPrice {
         this.volume = volume;
     }
 
+    // Encapsulation
     public int getId() {
         return id;
-    }
-
-    public int getStockId() {
-        return stockId;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public BigDecimal getOpen() {
-        return open;
-    }
-
-    public BigDecimal getHigh() {
-        return high;
-    }
-
-    public BigDecimal getLow() {
-        return low;
-    }
-
-    public BigDecimal getClose() {
-        return close;
-    }
-
-    public BigDecimal getAdjustedClose() {
-        return adjustedClose;
-    }
-
-    public int getVolume() {
-        return volume;
     }
 
     public void setId(int id) {
         this.id = id;
     }
 
+    public int getStockId() {
+        return stockId;
+    }
+
     public void setStockId(int stockId) {
         this.stockId = stockId;
     }
 
-    public void setDate(Date date) {
+    // Use LocalDate instead of Date
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
-    public void setOpen(BigDecimal open) {
-        this.open = open;
-    }
-
-    public void setHigh(BigDecimal high) {
-        this.high = high;
-    }
-
-    public void setLow(BigDecimal low) {
-        this.low = low;
-    }
-
-    public void setClose(BigDecimal close) {
-        this.close = close;
-    }
-
-    public void setAdjustedClose(BigDecimal adjustedClose) {
-        this.adjustedClose = adjustedClose;
-    }
-
+    // Validation in setter
     public void setVolume(int volume) {
-        this.volume = volume;
+        if (volume >= 0) {
+            this.volume = volume;
+        } else {
+            throw new IllegalArgumentException("Volume must be non-negative");
+        }
     }
+
+    // Other getters and setters...
 
     @Override
     public String toString() {

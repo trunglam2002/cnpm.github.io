@@ -3,10 +3,7 @@ package dao;
 import model.StockTransaction;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +17,7 @@ public class StockTransactionDAO {
                 preparedStatement.setInt(1, stockTransaction.getStockId());
                 preparedStatement.setInt(2, stockTransaction.getUserId());
                 preparedStatement.setString(3, String.valueOf(stockTransaction.getTransactionType()));
-                preparedStatement.setDate(4, stockTransaction.getTransactionDate());
+                preparedStatement.setDate(4, Date.valueOf(stockTransaction.getTransactionDate()));
                 preparedStatement.setInt(5, stockTransaction.getQuantity());
                 preparedStatement.setBigDecimal(6, stockTransaction.getPrice());
                 preparedStatement.executeUpdate();
@@ -42,7 +39,7 @@ public class StockTransactionDAO {
                         stockTransaction.setStockId(resultSet.getInt("stock_id"));
                         stockTransaction.setUserId(resultSet.getInt("user_id"));
                         stockTransaction.setTransactionType(StockTransaction.TransactionType.valueOf(resultSet.getString("transaction_type")));
-                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
+                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date").toLocalDate());
                         stockTransaction.setQuantity(resultSet.getInt("quantity"));
                         stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
                         stockTransactions.add(stockTransaction);
@@ -63,7 +60,7 @@ public class StockTransactionDAO {
                 preparedStatement.setInt(1, stockTransaction.getStockId());
                 preparedStatement.setInt(2, stockTransaction.getUserId());
                 preparedStatement.setString(3, String.valueOf(stockTransaction.getTransactionType()));
-                preparedStatement.setDate(4, stockTransaction.getTransactionDate());
+                preparedStatement.setDate(4, Date.valueOf(stockTransaction.getTransactionDate()));
                 preparedStatement.setInt(5, stockTransaction.getQuantity());
                 preparedStatement.setBigDecimal(6, stockTransaction.getPrice());
                 preparedStatement.setInt(7, stockTransaction.getId());
@@ -87,7 +84,7 @@ public class StockTransactionDAO {
                         stockTransaction.setStockId(resultSet.getInt("stock_id"));
                         stockTransaction.setUserId(resultSet.getInt("user_id"));
                         stockTransaction.setTransactionType(StockTransaction.TransactionType.valueOf(resultSet.getString("transaction_type")));
-                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
+                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date").toLocalDate());
                         stockTransaction.setQuantity(resultSet.getInt("quantity"));
                         stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
                         stockTransactions.add(stockTransaction);
@@ -113,7 +110,7 @@ public class StockTransactionDAO {
                         stockTransaction.setStockId(resultSet.getInt("stock_id"));
                         stockTransaction.setUserId(resultSet.getInt("user_id"));
                         stockTransaction.setTransactionType(StockTransaction.TransactionType.valueOf(resultSet.getString("transaction_type")));
-                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date"));
+                        stockTransaction.setTransactionDate(resultSet.getDate("transaction_date").toLocalDate());
                         stockTransaction.setQuantity(resultSet.getInt("quantity"));
                         stockTransaction.setPrice(BigDecimal.valueOf(resultSet.getDouble("price")));
                         stockTransactions.add(stockTransaction);

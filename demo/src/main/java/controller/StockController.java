@@ -125,7 +125,7 @@ public class StockController {
         transaction.setStockId(stockId);
         transaction.setUserId(userId);
         transaction.setTransactionType(StockTransaction.TransactionType.valueOf(transactionType.toUpperCase()));
-        transaction.setTransactionDate(DateUtils.getCurrentDate());
+        transaction.setTransactionDate(DateUtils.getCurrentDate().toLocalDate());
         transaction.setQuantity(quantity);
         transaction.setPrice(limitPrice != null ? limitPrice : stock.getCurrentPrice());
         return transaction;

@@ -5,14 +5,10 @@ import java.math.BigDecimal;
 public class User {
     private int id;
     private String username;
-
     private String password;
+    private BigDecimal balance;
 
-    private BigDecimal balance; // Thêm trường balance
-
-    // Constructors, getters, setters
     public User() {
-
     }
 
     public User(int id, String username, String password) {
@@ -21,32 +17,39 @@ public class User {
         this.password = password;
     }
 
+    // Encapsulation
     public BigDecimal getBalance() {
         return balance;
     }
 
+    // Validation in setter
+    public void setBalance(BigDecimal balance) {
+        if (balance == null || balance.compareTo(BigDecimal.ZERO) >= 0) {
+            this.balance = balance;
+        } else {
+            throw new IllegalArgumentException("Balance must be non-negative or null");
+        }
+    }
+
+    // Other getters and setters...
     public int getId() {
         return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
     }
 
     public void setId(int id) {
         this.id = id;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public void setPassword(String password) {
@@ -59,6 +62,7 @@ public class User {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
+                ", balance=" + balance +
                 '}';
     }
 }

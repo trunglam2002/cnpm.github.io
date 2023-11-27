@@ -6,15 +6,12 @@ public class Stock {
     private int id;
     private String symbol;
     private String company;
+    private BigDecimal currentPrice;
+    private int quantity;
 
-    private BigDecimal currentPrice; // Thêm thông tin về giá hiện tại của cổ phiếu
-
-    private int quantity;  // Trường mới để đại diện cho số lượng cổ phiếu có sẵn
-
-    // Constructors, getters, setters
     public Stock() {
-
     }
+
     public Stock(int id, String symbol, String company) {
         this.id = id;
         this.symbol = symbol;
@@ -22,23 +19,45 @@ public class Stock {
     }
 
     public void updateQuantity(int quantityChange) {
-        this.quantity += quantityChange;
+        setQuantity(getQuantity() + quantityChange);
     }
 
+    // Encapsulation
     public int getQuantity() {
         return quantity;
+    }
+
+    // Validation in setter
+    public void setQuantity(int quantity) {
+        if (quantity >= 0) {
+            this.quantity = quantity;
+        } else {
+            throw new IllegalArgumentException("Quantity must be non-negative");
+        }
     }
 
     public int getId() {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getSymbol() {
         return symbol;
     }
 
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
     public String getCompany() {
         return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public BigDecimal getCurrentPrice() {
@@ -49,24 +68,14 @@ public class Stock {
         this.currentPrice = currentPrice;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
-    }
-
     @Override
     public String toString() {
         return "Stock{" +
                 "id=" + id +
                 ", symbol='" + symbol + '\'' +
                 ", company='" + company + '\'' +
+                ", quantity=" + quantity +
+                ", currentPrice=" + currentPrice +
                 '}';
     }
 }
