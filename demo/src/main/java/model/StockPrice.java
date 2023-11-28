@@ -1,112 +1,55 @@
 package model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class StockPrice {
     private int id;
     private int stockId;
-    private LocalDate date;
-    private BigDecimal open;
-    private BigDecimal high;
-    private BigDecimal low;
-    private BigDecimal close;
-    private BigDecimal adjustedClose;
-    private int volume;
+    private int quantity;
+    private BigDecimal price;
 
+    // Constructors, getters, setters
     public StockPrice() {
+
     }
 
-    public StockPrice(int id, int stockId, LocalDate date, BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal close, BigDecimal adjustedClose, int volume) {
+    public StockPrice(int id, int stockId, int quantity, BigDecimal price) {
         this.id = id;
         this.stockId = stockId;
-        this.date = date;
-        this.open = open;
-        this.high = high;
-        this.low = low;
-        this.close = close;
-        this.adjustedClose = adjustedClose;
-        this.volume = volume;
+        this.quantity = quantity;
+        this.price = price;
     }
 
-    // Encapsulation
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getStockId() {
         return stockId;
     }
 
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public void setStockId(int stockId) {
         this.stockId = stockId;
     }
 
-    // Use LocalDate instead of Date
-    public LocalDate getDate() {
-        return date;
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    // Validation in setter
-    public void setVolume(int volume) {
-        if (volume >= 0) {
-            this.volume = volume;
-        } else {
-            throw new IllegalArgumentException("Volume must be non-negative");
-        }
-    }
-
-    // Other getters and setters...
-    public BigDecimal getOpen() {
-        return open;
-    }
-
-    public BigDecimal getHigh() {
-        return high;
-    }
-
-    public BigDecimal getLow() {
-        return low;
-    }
-
-    public BigDecimal getClose() {
-        return close;
-    }
-
-    public BigDecimal getAdjustedClose() {
-        return adjustedClose;
-    }
-
-    public int getVolume() {
-        return volume;
-    }
-
-    public void setOpen(BigDecimal open) {
-        this.open = open;
-    }
-
-    public void setHigh(BigDecimal high) {
-        this.high = high;
-    }
-
-    public void setLow(BigDecimal low) {
-        this.low = low;
-    }
-
-    public void setClose(BigDecimal close) {
-        this.close = close;
-    }
-
-    public void setAdjustedClose(BigDecimal adjustedClose) {
-        this.adjustedClose = adjustedClose;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     @Override
@@ -114,13 +57,8 @@ public class StockPrice {
         return "StockPrice{" +
                 "id=" + id +
                 ", stockId=" + stockId +
-                ", date=" + date +
-                ", open=" + open +
-                ", high=" + high +
-                ", low=" + low +
-                ", close=" + close +
-                ", adjustedClose=" + adjustedClose +
-                ", volume=" + volume +
+                ", quantity=" + quantity +
+                ", price=" + price +
                 '}';
     }
 }

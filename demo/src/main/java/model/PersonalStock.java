@@ -1,15 +1,24 @@
 package model;
 
-public class TransactionHistory {
+public class PersonalStock {
     private int id;
     private int userId;
     private int stockId;
-    private int stockTransactionId;
+    private int quantity;
 
-    public TransactionHistory() {
+    // Constructors, getters, setters
+
+    public PersonalStock() {
+        // Constructor mặc định
     }
 
-    // Encapsulation
+    public PersonalStock(int id, int userId, int stockId, int quantity) {
+        this.id = id;
+        this.userId = userId;
+        this.stockId = stockId;
+        this.quantity = quantity;
+    }
+
     public int getId() {
         return id;
     }
@@ -34,23 +43,21 @@ public class TransactionHistory {
         this.stockId = stockId;
     }
 
-    public int getStockTransactionId() {
-        return stockTransactionId;
+    public int getQuantity() {
+        return quantity;
     }
 
-    public void setStockTransactionId(int stockTransactionId) {
-        this.stockTransactionId = stockTransactionId;
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
-
-    // Other getters and setters...
 
     @Override
     public String toString() {
-        return "TransactionHistory{" +
+        return "PersonalStock{" +
                 "id=" + id +
                 ", userId=" + userId +
                 ", stockId=" + stockId +
-                ", stockTransactionId=" + stockTransactionId +
+                ", quantity=" + quantity +
                 '}';
     }
 }

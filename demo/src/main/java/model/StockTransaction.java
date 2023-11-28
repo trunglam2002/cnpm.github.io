@@ -1,14 +1,14 @@
 package model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.sql.Date;
 
 public class StockTransaction {
     private int id;
     private int stockId;
     private int userId;
     private TransactionType transactionType;
-    private LocalDate transactionDate;
+    private Date transactionDate;
     private int quantity;
     private BigDecimal price;
 
@@ -19,10 +19,6 @@ public class StockTransaction {
         LIMIT_SELL
     }
 
-    public StockTransaction() {
-    }
-
-    // Encapsulation
     public int getId() {
         return id;
     }
@@ -55,44 +51,29 @@ public class StockTransaction {
         this.transactionType = transactionType;
     }
 
-    // Use LocalDate instead of Date
-    public LocalDate getTransactionDate() {
+    public Date getTransactionDate() {
         return transactionDate;
     }
 
-    public void setTransactionDate(LocalDate transactionDate) {
+    public void setTransactionDate(Date transactionDate) {
         this.transactionDate = transactionDate;
     }
 
-    // Encapsulation
     public int getQuantity() {
         return quantity;
     }
 
-    // Validation in setter
     public void setQuantity(int quantity) {
-        if (quantity >= 0) {
-            this.quantity = quantity;
-        } else {
-            throw new IllegalArgumentException("Quantity must be non-negative");
-        }
+        this.quantity = quantity;
     }
 
-    // Encapsulation
     public BigDecimal getPrice() {
         return price;
     }
 
-    // Validation in setter
     public void setPrice(BigDecimal price) {
-        if (price != null && price.compareTo(BigDecimal.ZERO) >= 0) {
-            this.price = price;
-        } else {
-            throw new IllegalArgumentException("Price must be non-negative");
-        }
+        this.price = price;
     }
-
-    // Other getters and setters...
 
     @Override
     public String toString() {

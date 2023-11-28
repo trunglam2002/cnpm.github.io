@@ -1,10 +1,15 @@
 package controller;
 
+import dao.PersonalStockDAO;
 import dao.StockDAO;
+import dao.StockPriceDAO;
 import dao.StockTransactionDAO;
 import dao.UserDAO;
+import model.PersonalStock;
 import model.Stock;
+import model.StockPrice;
 import model.StockTransaction;
+import model.StockTransaction.TransactionType;
 import model.User;
 
 import java.math.BigDecimal;
@@ -25,122 +30,159 @@ public class StockController {
         return stockDAO.getAllStocks();
     }
 
-    public void viewStockList(boolean showDetails, int stockIdToShowDetails) {
+    private BigDecimal getCurrentPriceForStock(int stockId, List<StockPrice> stockPrices) {
+        for (StockPrice stockPrice : stockPrices) {
+            if (stockPrice.getStockId() == stockId) {
+                return stockPrice.getPrice();
+            }
+        }
+        return BigDecimal.ZERO; // Trả về giá mặc định hoặc xử lý theo nhu cầu
+    }
+
+    public void viewAllStockDetails() {
         List<Stock> stocks = stockDAO.getAllStocks();
+        StockPriceDAO stockPriceDAO = new StockPriceDAO();
 
         if (stocks.isEmpty()) {
             System.out.println("Không có cổ phiếu khả dụng.");
         } else {
-            System.out.println("Danh sách cổ phiếu:");
+            System.out.println("Thông tin tất cả cổ phiếu:");
             for (Stock stock : stocks) {
                 System.out.println("ID Cổ phiếu: " + stock.getId());
                 System.out.println("Ký hiệu: " + stock.getSymbol());
                 System.out.println("Công ty: " + stock.getCompany());
-                if (showDetails && stock.getId() == stockIdToShowDetails) {
-                    System.out.println("Giá hiện tại: " + stock.getCurrentPrice());
+
+                List<StockPrice> stockPrices = stockPriceDAO.getStockPricesByStockId(stock.getId());
+                if (!stockPrices.isEmpty()) {
+                    BigDecimal currentPrice = getCurrentPriceForStock(stock.getId(), stockPrices);
+                    System.out.println("Giá hiện tại: " + (currentPrice != null ? currentPrice : "N/A"));
                     // Hiển thị các thông tin khác nếu cần
+                } else {
+                    System.out.println("Không có thông tin giá cho cổ phiếu này.");
                 }
+
                 System.out.println("----------------------------------");
             }
         }
     }
 
-    public void viewStockDetails(int stockId) {
+    public void buyStock(int userId, int stockId, int quantity, BigDecimal userBalance) {
+        performTransaction(userId, stockId, quantity, userBalance, "BUY");
+    }
+
+    public void sellStock(int userId, int stockId, int quantity, BigDecimal userBalance) {
+        performTransaction(userId, stockId, quantity, userBalance, "SELL");
+    }
+
+    public void performTransaction(int userId, int stockId, int quantity, BigDecimal userBalance,
+            String transactionType) {
+        StockPriceDAO stockPriceDAO = new StockPriceDAO();
+        List<StockPrice> stockPrices = stockPriceDAO.getAllStockPrices();
+        PersonalStockDAO personalStockDAO = new PersonalStockDAO();
         Stock stock = stockDAO.getStockById(stockId);
-        if (stock != null) {
-            System.out.println("Thông tin cổ phiếu:");
-            System.out.println("ID Cổ phiếu: " + stock.getId());
-            System.out.println("Ký hiệu: " + stock.getSymbol());
-            System.out.println("Công ty: " + stock.getCompany());
-            System.out.println("Giá hiện tại: " + stock.getCurrentPrice());
-            // Hiển thị các thông tin khác nếu cần
-            System.out.println("----------------------------------");
-        } else {
-            System.out.println("Không tìm thấy cổ phiếu.");
-        }
-    }
-
-    public void buyStock(int userId, int stockId, int quantity, BigDecimal limitPrice) {
-        performTransaction(userId, stockId, quantity, limitPrice, "BUY");
-    }
-
-    public void sellStock(int userId, int stockId, int quantity, BigDecimal limitPrice) {
-        performTransaction(userId, stockId, quantity, limitPrice, "SELL");
-    }
-
-    public void placeLimitOrder(int userId, int stockId, int quantity, BigDecimal limitPrice, String orderType) {
-        Stock stock = stockDAO.getStockById(stockId);
-        if (stock == null) {
-            System.out.println("Không tìm thấy cổ phiếu.");
+        User user = userDAO.getUserById(userId);
+        user.setBalance(userBalance);
+        if (stock == null || user == null) {
+            System.out.println("Không tìm thấy cổ phiếu hoặc người dùng.");
             return;
         }
-
-        // Kiểm tra giá cổ phiếu và thực hiện giao dịch nếu giá đạt đến mức giá đã đặt
-        if ((orderType.equalsIgnoreCase("BUY") && stock.getCurrentPrice().compareTo(limitPrice) <= 0)
-                || (orderType.equalsIgnoreCase("SELL") && stock.getCurrentPrice().compareTo(limitPrice) >= 0)) {
-            // Thực hiện giao dịch
-            StockTransaction limitOrder = createTransaction(userId, stockId, quantity, limitPrice, orderType);
-            stockTransactionDAO.addStockTransaction(limitOrder);
-            updateBalance(userId, limitOrder);
-            System.out.println("Đặt lệnh giới hạn thành công. ID giao dịch: " + limitOrder.getId());
-        } else {
-            System.out.println("Lệnh giới hạn không được thực hiện. Giá cổ phiếu hiện tại không đạt đến mức giá đã đặt.");
-        }
-    }
-
-    private void performTransaction(int userId, int stockId, int quantity, BigDecimal limitPrice, String transactionType) {
-        Stock stock = stockDAO.getStockById(stockId);
-        if (stock == null) {
-            System.out.println("Không tìm thấy cổ phiếu.");
-            return;
-        }
-
-        BigDecimal totalPrice = stock.getCurrentPrice().multiply(BigDecimal.valueOf(quantity));
-
-        // Kiểm tra xem người dùng có đủ tiền hoặc cổ phiếu để thực hiện giao dịch không
-        if ((transactionType.equals("BUY") && limitPrice != null && limitPrice.compareTo(stock.getCurrentPrice()) < 0)
-                || (transactionType.equals("SELL") && quantity > getUserStockQuantity(userId, stockId))) {
+        BigDecimal stockPrice = getCurrentPriceForStock(stock.getId(), stockPrices);
+        BigDecimal currentPrice = stockPrice.multiply(BigDecimal.valueOf(quantity));
+        if ((transactionType.equals("BUY") && userBalance != null && userBalance.compareTo(currentPrice) < 0)
+                || (transactionType.equals("SELL")
+                        && quantity > personalStockDAO.getPersonalStockByUserAndStock(userId, stockId).getQuantity())
+                || transactionType.equals("BUY") && quantity > stockPriceDAO.getStockPriceById(stockId).getQuantity()) {
             System.out.println("Giao dịch không thể hoàn thành. Kiểm tra số dư hoặc số lượng cổ phiếu.");
             return;
         }
 
         // Thực hiện giao dịch
-        StockTransaction transaction = createTransaction(userId, stockId, quantity, limitPrice, transactionType);
+        StockTransaction transaction = createTransaction(userId, stockId, quantity, userBalance, transactionType);
         stockTransactionDAO.addStockTransaction(transaction);
-        updateBalance(userId, transaction);
+        System.out.println("User Balance Before Transaction: " + user.getBalance());
+        updateBalance(user, transaction);
+        updateStockPrice(stockPriceDAO.getStockPriceById(stock.getId()), transaction);
+        updatePersonalStock(userId, stockId, quantity, transactionType); // Thêm dòng này
+        System.out.println("User Balance After Transaction: " + user.getBalance());
         System.out.println("Giao dịch thành công. ID giao dịch: " + transaction.getId());
     }
 
-    private int getUserStockQuantity(int userId, int stockId) {
-        List<StockTransaction> userTransactions = stockTransactionDAO.getStockTransactionsByUser(userId);
-        return userTransactions.stream()
-                .filter(t -> t.getStockId() == stockId)
-                .mapToInt(StockTransaction::getQuantity)
-                .sum();
-    }
-
-    private StockTransaction createTransaction(int userId, int stockId, int quantity, BigDecimal limitPrice, String transactionType) {
+    private StockTransaction createTransaction(int userId, int stockId, int quantity, BigDecimal userBalance,
+            String transactionType) {
         Stock stock = stockDAO.getStockById(stockId);
+        StockPriceDAO stockPriceDAO = new StockPriceDAO();
+        List<StockPrice> stockPrices = stockPriceDAO.getAllStockPrices();
+        BigDecimal currentPrice = getCurrentPriceForStock(stock.getId(), stockPrices);
+
         StockTransaction transaction = new StockTransaction();
         transaction.setStockId(stockId);
         transaction.setUserId(userId);
         transaction.setTransactionType(StockTransaction.TransactionType.valueOf(transactionType.toUpperCase()));
-        transaction.setTransactionDate(DateUtils.getCurrentDate().toLocalDate());
+        transaction.setTransactionDate(DateUtils.getCurrentDate());
         transaction.setQuantity(quantity);
-        transaction.setPrice(limitPrice != null ? limitPrice : stock.getCurrentPrice());
+        BigDecimal resultPrice = currentPrice.multiply(BigDecimal.valueOf(quantity));
+        transaction.setPrice(resultPrice);
         return transaction;
     }
 
-    private void updateBalance(int userId, StockTransaction transaction) {
-        User user = userDAO.getUserById(userId);
+    private void updateBalance(User user, StockTransaction transaction) {
         if (user != null) {
-            BigDecimal transactionAmount = transaction.getPrice().multiply(BigDecimal.valueOf(transaction.getQuantity()));
+
+            System.out.println("Transaction Amount: " + transaction.getPrice());
+
             if (transaction.getTransactionType() == StockTransaction.TransactionType.BUY) {
-                user.setBalance(user.getBalance().subtract(transactionAmount));
+                user.setBalance(user.getBalance().subtract(transaction.getPrice()));
             } else if (transaction.getTransactionType() == StockTransaction.TransactionType.SELL) {
-                user.setBalance(user.getBalance().add(transactionAmount));
+                user.setBalance(user.getBalance().add(transaction.getPrice()));
             }
-            userDAO.updateUser(user);
+
+            userDAO.updateUserBalance(user.getId(), user.getBalance());
         }
     }
+
+    private void updateStockPrice(StockPrice stockprice, StockTransaction transaction) {
+        int newQuantity;
+        if (stockprice != null) {
+            // Giảm hoặc tăng tuỳ BUY hoặc SELL quantity trong bảng stock_price sau khi mua
+            // thành công
+            if (transaction.getTransactionType().equals(TransactionType.BUY)) {
+                newQuantity = stockprice.getQuantity() - transaction.getQuantity();
+            } else {
+                newQuantity = stockprice.getQuantity() + transaction.getQuantity();
+            }
+            stockprice.setQuantity(newQuantity);
+
+            // Tạo một đối tượng StockPriceDAO và gọi phương thức updateStockPrice
+            StockPriceDAO stockPriceDAO = new StockPriceDAO();
+            stockPriceDAO.updateStockPrice(stockprice);
+        }
+    }
+
+    private void updatePersonalStock(int userId, int stockId, int quantity, String transactionType) {
+        PersonalStockDAO personalStockDAO = new PersonalStockDAO();
+
+        // Lấy thông tin PersonalStock hiện tại (nếu có)
+        PersonalStock existingPersonalStock = personalStockDAO.getPersonalStockByUserAndStock(userId, stockId);
+
+        if (existingPersonalStock == null) {
+            // Nếu không có, tạo mới và đặt giá trị quantity dựa trên BUY hoặc SELL
+            PersonalStock personalStock = new PersonalStock();
+            personalStock.setUserId(userId);
+            personalStock.setStockId(stockId);
+            personalStock.setQuantity(
+                    transactionType.equals("BUY") ? quantity : 0);
+
+            // Thêm mới PersonalStock
+            personalStockDAO.addPersonalStock(personalStock);
+        } else {
+            // Nếu có, cập nhật giá trị quantity dựa trên BUY hoặc SELL
+            existingPersonalStock.setQuantity(
+                    transactionType.equals("BUY") ? existingPersonalStock.getQuantity() + quantity
+                            : existingPersonalStock.getQuantity() - quantity);
+
+            // Cập nhật PersonalStock
+            personalStockDAO.updatePersonalStock(existingPersonalStock);
+        }
+    }
+
 }
