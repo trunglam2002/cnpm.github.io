@@ -1,6 +1,7 @@
 package dao;
 
 import model.Stock;
+import model.StockPrice;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -91,4 +92,27 @@ public class StockDAO {
             e.printStackTrace();
         }
     }
+
+    public List<StockPrice> getAllStockPrices() {
+        List<StockPrice> stockPrices = new ArrayList<>();
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT * FROM stock_price";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        StockPrice stockPrice = new StockPrice();
+                        stockPrice.setId(resultSet.getInt("id"));
+                        stockPrice.setStockId(resultSet.getInt("stock_id"));
+                        stockPrice.setQuantity(resultSet.getInt("quantity"));
+                        stockPrice.setPrice(resultSet.getBigDecimal("price"));
+                        stockPrices.add(stockPrice);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return stockPrices;
+    }
+
 }

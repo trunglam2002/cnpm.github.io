@@ -12,7 +12,7 @@ public class UserDAO {
 
     public void addUser(User user) {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "INSERT INTO user (username, password) VALUES (?, ?)";
+            String query = "INSERT INTO user (username, password, balance) VALUES (?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, user.getUsername());
                 preparedStatement.setString(2, user.getPassword());
@@ -70,7 +70,7 @@ public class UserDAO {
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, username);
                 preparedStatement.setString(2, password); // Giả sử bạn đã mã hóa mật khẩu trước khi lưu vào cơ sở dữ
-                                                          // liệu
+                // liệu
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     return resultSet.next();
                 }
@@ -114,6 +114,61 @@ public class UserDAO {
         return null;
     }
 
+    public String getPasswordByUsername(String username) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT password FROM user WHERE username = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, username);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString("password");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Trả về null nếu không tìm thấy mật khẩu
+    }
+
+    public int getUserIdByUsername(String username) {
+        // Giả sử bạn có một câu truy vấn SQL hoặc sử dụng JDBC để truy vấn cơ sở dữ liệu
+        // Đây là một ví dụ đơn giản, bạn cần thay đổi dựa trên cơ sở dữ liệu của bạn
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT id FROM user WHERE username = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, username);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getInt("id");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Xử lý ngoại lệ theo ý muốn của bạn
+        }
+
+        return -1; // Trả về giá trị mặc định nếu không tìm thấy UserId
+    }
+
+    public BigDecimal getUserBalanceById(int userId) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT balance FROM user WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, userId);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getBigDecimal("balance");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle the exception according to your application's error-handling strategy
+        }
+        return BigDecimal.ZERO; // Return a default value if the balance is not found or an error occurs
+    }
+
     public void updateUserBalance(int userId, BigDecimal newBalance) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String query = "UPDATE user SET balance = ? WHERE id = ?";
@@ -127,11 +182,11 @@ public class UserDAO {
         }
     }
 
-    public BigDecimal getUserBalance(int userId) {
+    public BigDecimal getUserBalance(String userName) {
         try (Connection connection = DatabaseManager.getConnection()) {
-            String query = "SELECT balance FROM user WHERE id = ?";
+            String query = "SELECT balance FROM user WHERE userName = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, userId);
+                preparedStatement.setString(1, userName);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         return resultSet.getBigDecimal("balance");

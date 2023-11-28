@@ -20,16 +20,30 @@ public class StockController {
     private final StockTransactionDAO stockTransactionDAO;
     private final UserDAO userDAO;
 
-    public StockController(StockDAO stockDAO, StockTransactionDAO stockTransactionDAO, UserDAO userDAO) {
+    private final PersonalStockDAO personalStockDAO;
+
+    public StockController(StockDAO stockDAO, StockTransactionDAO stockTransactionDAO, UserDAO userDAO, PersonalStockDAO personalStockDAO) {
         this.stockDAO = stockDAO;
         this.stockTransactionDAO = stockTransactionDAO;
         this.userDAO = userDAO;
+        this.personalStockDAO = personalStockDAO;
     }
 
     public List<Stock> getAllStocks() {
         return stockDAO.getAllStocks();
     }
 
+    public List<StockPrice> getAllStockPrices() {
+        return stockDAO.getAllStockPrices();
+    }
+
+    public BigDecimal getUserBalance(int userId) {
+        return userDAO.getUserBalanceById(userId);
+    }
+
+    public List<PersonalStock> getAllPersonalStock() {
+        return personalStockDAO.getAllPersonalStocks();
+    }
     private BigDecimal getCurrentPriceForStock(int stockId, List<StockPrice> stockPrices) {
         for (StockPrice stockPrice : stockPrices) {
             if (stockPrice.getStockId() == stockId) {
@@ -38,6 +52,19 @@ public class StockController {
         }
         return BigDecimal.ZERO; // Trả về giá mặc định hoặc xử lý theo nhu cầu
     }
+
+    public void addPersonalStock(int userId, int stockId, int quantity) {
+        // Thực hiện giao dịch mua ở đây (cập nhật bảng transaction và stock, kiểm tra số dư v.v.)
+
+        // Sau khi giao dịch thành công, thêm thông tin vào PersonalStock
+        PersonalStock personalStock = new PersonalStock();
+        personalStock.setUserId(userId);
+        personalStock.setStockId(stockId);
+        personalStock.setQuantity(quantity);
+
+        personalStockDAO.addPersonalStock(personalStock);
+    }
+
 
     public void viewAllStockDetails() {
         List<Stock> stocks = stockDAO.getAllStocks();
@@ -66,6 +93,10 @@ public class StockController {
         }
     }
 
+    public List<StockTransaction> getTransactionHistory() {
+        return stockTransactionDAO.getAllStockTransactions();
+    }
+
     public void buyStock(int userId, int stockId, int quantity, BigDecimal userBalance) {
         performTransaction(userId, stockId, quantity, userBalance, "BUY");
     }
@@ -75,7 +106,7 @@ public class StockController {
     }
 
     public void performTransaction(int userId, int stockId, int quantity, BigDecimal userBalance,
-            String transactionType) {
+                                   String transactionType) {
         StockPriceDAO stockPriceDAO = new StockPriceDAO();
         List<StockPrice> stockPrices = stockPriceDAO.getAllStockPrices();
         PersonalStockDAO personalStockDAO = new PersonalStockDAO();
@@ -90,7 +121,7 @@ public class StockController {
         BigDecimal currentPrice = stockPrice.multiply(BigDecimal.valueOf(quantity));
         if ((transactionType.equals("BUY") && userBalance != null && userBalance.compareTo(currentPrice) < 0)
                 || (transactionType.equals("SELL")
-                        && quantity > personalStockDAO.getPersonalStockByUserAndStock(userId, stockId).getQuantity())
+                && quantity > personalStockDAO.getPersonalStockByUserAndStock(userId, stockId).getQuantity())
                 || transactionType.equals("BUY") && quantity > stockPriceDAO.getStockPriceById(stockId).getQuantity()) {
             System.out.println("Giao dịch không thể hoàn thành. Kiểm tra số dư hoặc số lượng cổ phiếu.");
             return;
@@ -108,7 +139,7 @@ public class StockController {
     }
 
     private StockTransaction createTransaction(int userId, int stockId, int quantity, BigDecimal userBalance,
-            String transactionType) {
+                                               String transactionType) {
         Stock stock = stockDAO.getStockById(stockId);
         StockPriceDAO stockPriceDAO = new StockPriceDAO();
         List<StockPrice> stockPrices = stockPriceDAO.getAllStockPrices();
@@ -184,5 +215,4 @@ public class StockController {
             personalStockDAO.updatePersonalStock(existingPersonalStock);
         }
     }
-
 }
