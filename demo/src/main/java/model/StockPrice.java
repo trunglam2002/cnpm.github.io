@@ -65,6 +65,49 @@ public class StockPrice {
     }
 
     // Other getters and setters...
+    public BigDecimal getOpen() {
+        return open;
+    }
+
+    public BigDecimal getHigh() {
+        return high;
+    }
+
+    public BigDecimal getLow() {
+        return low;
+    }
+
+    public BigDecimal getClose() {
+        return close;
+    }
+
+    public BigDecimal getAdjustedClose() {
+        return adjustedClose;
+    }
+
+    public int getVolume() {
+        return volume;
+    }
+
+    public void setOpen(BigDecimal open) {
+        this.open = open;
+    }
+
+    public void setHigh(BigDecimal high) {
+        this.high = high;
+    }
+
+    public void setLow(BigDecimal low) {
+        this.low = low;
+    }
+
+    public void setClose(BigDecimal close) {
+        this.close = close;
+    }
+
+    public void setAdjustedClose(BigDecimal adjustedClose) {
+        this.adjustedClose = adjustedClose;
+    }
 
     @Override
     public String toString() {

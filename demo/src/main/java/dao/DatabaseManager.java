@@ -11,10 +11,10 @@ public class DatabaseManager {
 
     static {
         try {
-            // Đăng ký Driver JDBC
+            // Đăng ký trình điều khiển JDBC
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Error loading MySQL JDBC Driver", e);
+            throw new RuntimeException("Lỗi khi tải trình điều khiển MySQL JDBC", e);
         }
     }
 
@@ -22,7 +22,7 @@ public class DatabaseManager {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
-            throw new RuntimeException("Error connecting to the database", e);
+            throw new RuntimeException("Lỗi kết nối đến cơ sở dữ liệu", e);
         }
     }
 
@@ -31,7 +31,7 @@ public class DatabaseManager {
             try {
                 connection.close();
             } catch (SQLException e) {
-                throw new RuntimeException("Error closing the database connection", e);
+                throw new RuntimeException("Lỗi khi đóng kết nối cơ sở dữ liệu", e);
             }
         }
     }
